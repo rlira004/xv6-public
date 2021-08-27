@@ -47,6 +47,8 @@ trap(struct trapframe *tf)
   }
 
   switch(tf->trapno){
+  
+
   case T_IRQ0 + IRQ_TIMER:
     if(cpuid() == 0){
       acquire(&tickslock);
@@ -77,6 +79,17 @@ trap(struct trapframe *tf)
             cpuid(), tf->cs, tf->eip);
     lapiceoi();
     break;
+
+  //Lab3 Added case T_PGFLT
+  case T_PGFLT: ;
+        if(allocuvm(myproc()->pgdir, KERNBASE - (myproc()->pagesTracker * PGSIZE * 2), PGROUNDUP(rcr2())) == 0){
+         	cprintf("PAGEFAULT: Page could not be set \n");
+          	break;
+          }
+          myproc()->pagesTracker = myproc()->pagesTracker + 1;
+          cprintf("Increased stack size: %d \n", myproc()->pagesTracker);
+      break;
+  //************************
 
   //PAGEBREAK: 13
   default:
